@@ -12,11 +12,9 @@
     tools:context="uk.co.nic_dart.simplehttpcamera.MainActivity"
     tools:showIn="@layout/activity_main">
 
+
     <SurfaceView
+        android:id="@+id/cameraSurfaceView"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:id="@+id/surfaceView"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="false" />
+        android:layout_height="fill_parent" />
 </RelativeLayout>
