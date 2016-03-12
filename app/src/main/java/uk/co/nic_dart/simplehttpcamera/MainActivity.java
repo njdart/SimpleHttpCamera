@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.Size;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
@@ -22,12 +23,20 @@ public class MainActivity extends AppCompatActivity {
     SurfaceHolder surfaceHolder;
     public static String appTag = "SimpleHttpCamera";
     String TAG = appTag + "::MainActivity";
+    private static NanoRestServer nanoRestServer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        try {
+            nanoRestServer = new NanoRestServer("127.0.0.1", 8080);
+        } catch (IOException e) {
+            Toast.makeText(MainActivity.this, "Failed to enable the REST Client", Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -50,13 +59,27 @@ public class MainActivity extends AppCompatActivity {
             Log.w(TAG, "Failed to get Camera Object Safely, Camera was either busy of non-existant");
             Toast.makeText(this, "Could not find Camera", Toast.LENGTH_LONG).show();
         } else {
-            int orientation = ((getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) ? 0 : 90);
 
+            Log.d(TAG, "Using Camera " + camera);
+
+            int orientation = ((getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) ? 0 : 90);
             Log.d(TAG, "Setting orientation to " + orientation + " degrees");
 
             camera.setDisplayOrientation(orientation);
 
-            Log.d(TAG, "Using Camera " + camera);
+            Camera.Parameters params = camera.getParameters();
+            System.out.println("Camera Params " + params);
+            // 4208x3120
+            for(Camera.Size size : params.getSupportedPictureSizes()) {
+                System.out.println("Supported Pic Size " + size.height + "," + size.width);
+            }
+
+            Camera.Size size = params.getSupportedPictureSizes().get(0);
+            params.setPictureSize(size.width, size.height);
+
+            System.out.println("Using Camera Size " + size.width + "," + size.height);
+
+            camera.setParameters(params);
 
             // Add an events callback to the holder
             surfaceHolder.addCallback(new SurfaceHolder.Callback() {
@@ -71,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     camera.startPreview();
+                    nanoRestServer.enable(camera);
                 }
 
                 @Override
@@ -90,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
 
+        nanoRestServer.disable();
         releaseCameraAndPreview();
     }
 
@@ -149,5 +174,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        System.out.println("App Destroyed");
+        this.nanoRestServer.destroy();
+        this.nanoRestServer = null;
     }
 }
