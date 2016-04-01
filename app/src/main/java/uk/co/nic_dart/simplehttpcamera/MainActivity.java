@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         try {
-            nanoRestServer = new NanoRestServer("127.0.0.1", 8080);
+            nanoRestServer = new NanoRestServer("0.0.0.0", 8080);
         } catch (IOException e) {
             Toast.makeText(MainActivity.this, "Failed to enable the REST Client", Toast.LENGTH_LONG).show();
             e.printStackTrace();
@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
             Log.d(TAG, "Using Camera " + camera);
 
-            int orientation = ((getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) ? 0 : 90);
+            int orientation = ((getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) ? 180 : 90);
             Log.d(TAG, "Setting orientation to " + orientation + " degrees");
 
             camera.setDisplayOrientation(orientation);

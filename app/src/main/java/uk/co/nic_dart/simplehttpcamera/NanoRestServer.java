@@ -1,11 +1,16 @@
 package uk.co.nic_dart.simplehttpcamera;
 
 import android.hardware.Camera;
+import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Map;
 import fi.iki.elonen.NanoHTTPD;
+import com.google.gson.Gson;
 
 /**
  * Created by nic on 04/03/16.
@@ -16,6 +21,8 @@ public class NanoRestServer extends NanoHTTPD {
     String TAG = MainActivity.appTag + "::NanoRESTServer";
 
     Boolean started = false;
+
+    Gson gson = new Gson();
 
     public NanoRestServer(String hostname, int port) throws IOException {
         super(hostname, port);
@@ -62,6 +69,31 @@ public class NanoRestServer extends NanoHTTPD {
                 }
             }
             return new Response(Response.Status.OK, "application/json", "{TIMEOUT}");
+        }
+
+        if(session.getUri().equals("/properties")) {
+
+            if(session.getMethod() == Method.GET) {
+                return new Response(Response.Status.OK, "application/json", this.gson.toJson(this.camera.getParameters()));
+            }
+
+            if(session.getMethod() == Method.POST) {
+
+                final HashMap<String, String> map = new HashMap<>();
+                try {
+                    session.parseBody(map);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return new Response(Response.Status.INTERNAL_ERROR, "application/json", e.getStackTrace().toString());
+                }
+
+                String json = map.get("postData");
+                Log.d(TAG, "BODY: " + json);
+
+                this.camera.setParameters(this.gson.fromJson(json, Camera.Parameters.class));
+
+                return new Response(Response.Status.OK, "application/json", "{POST SETTINGS}");
+            }
         }
 
         System.out.println("Getting Image");
