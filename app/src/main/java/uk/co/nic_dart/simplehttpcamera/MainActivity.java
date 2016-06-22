@@ -10,6 +10,7 @@ import android.util.Log;
 import android.util.Size;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
@@ -62,10 +63,19 @@ public class MainActivity extends AppCompatActivity {
 
             Log.d(TAG, "Using Camera " + camera);
 
-            int orientation = ((getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) ? 180 : 90);
-            Log.d(TAG, "Setting orientation to " + orientation + " degrees");
+            int rotation = this.getWindowManager().getDefaultDisplay()
+                    .getRotation();
+            int degrees = 0;
+            switch (rotation) {
+                case Surface.ROTATION_0: degrees = 0; break;
+                case Surface.ROTATION_90: degrees = 90; break;
+                case Surface.ROTATION_180: degrees = 180; break;
+                case Surface.ROTATION_270: degrees = 270; break;
+            }
 
-            camera.setDisplayOrientation(orientation);
+            Log.d(TAG, "Setting orientation to " + degrees + " degrees");
+
+            camera.setDisplayOrientation(degrees);
 
             Camera.Parameters params = camera.getParameters();
             System.out.println("Camera Params " + params);
