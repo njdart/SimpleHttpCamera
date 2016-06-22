@@ -1,8 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <ListPreference
-        android:key="pref_camera"
-        android:text="@string/pref_camera"
-        android:summary="@string/pref_camera_summary"
-        android:defaultValue="0" />
+
+    <PreferenceCategory
+        android:title="@string/pref_catagory_camera">
+
+        <ListPreference
+            android:key="pref_camera"
+            android:text="@string/pref_camera"
+            android:summary="@string/pref_camera_summary"
+            android:defaultValue="0"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_catagory_httpd">
+
+        <EditTextPreference
+            android:key="pref_httpd_host"
+            android:text="@string/pref_httpd_host"
+            android:summary="@string/pref_httpd_host_summary"
+            android:defaultValue="0.0.0.0" />
+
+        <EditTextPreference
+            android:key="pref_httpd_port"
+            android:text="@string/pref_httpd_port"
+            android:summary="@string/pref_httpd_port_summary"
+            android:defaultValue="80"
+            android:inputType="number" />
+
+    </PreferenceCategory>
 </PreferenceScreen>
