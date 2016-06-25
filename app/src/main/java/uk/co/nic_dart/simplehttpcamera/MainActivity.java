@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
@@ -19,9 +20,12 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
+
+import java.util.LinkedList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -82,11 +86,15 @@ public class MainActivity extends AppCompatActivity {
 
             }
 
+            Log.d(TAG, "Requesting Camera Permissions");
             // No explanation needed, we can request the permission.
-
             ActivityCompat.requestPermissions(MainActivity.this,
                     new String[]{Manifest.permission.CAMERA},
                     PERMISSION_REQUEST_CAMERA);
+
+        } else {
+            Log.d(TAG, "Starting Camera");
+            startCamera();
         }
 
 //        else {
@@ -202,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
             case PERMISSION_REQUEST_CAMERA: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "User Granted Camera Permission Request");
+                    startCamera();
                 } else {
                     Log.d(TAG, "User Denied Camera Permission Request");
                 }
@@ -209,20 +218,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void startCamera() {
+        cameraManager = (CameraManager) MainActivity.this.getSystemService(Context.CAMERA_SERVICE);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            Log.e(TAG, "Cannot open camera!");
+            return;
+        }
+        try {
+            cameraManager.openCamera(preferences.getString("pref_camera", "0"), this.cameraStateCallback, null);
+        } catch (CameraAccessException e) {
+            Log.e(TAG, e.getStackTrace().toString());
+        }
+    }
+
     CameraDevice.StateCallback cameraStateCallback = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(CameraDevice camera) {
-
+            Log.d(TAG, "CAMERA OPENED");
+            try {
+                camera.createCaptureSession(new LinkedList<Surface>(), null, null); // TODO: understand camera2!
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
         public void onDisconnected(CameraDevice camera) {
-
+            Log.d(TAG, "CAMERA DISCONNECTED");
         }
 
         @Override
         public void onError(CameraDevice camera, int error) {
-
+            Log.e(TAG, "CAMERA ERRORD");
         }
     };
 
